@@ -9,6 +9,15 @@ oshmpi_incdir="@OSHMPI_INCDIR@"
 oshmpi_libdir="@OSHMPI_LIBDIR@"
 wrapper_ldflags="@WRAPPER_LDFLAGS@"
 wrapper_libs="@WRAPPER_LIBS@"
+
+for arg in "$@"; do
+  if [ "$arg" = "-showlibs" ]; then
+    # Add your specific action here
+    echo "-I${oshmpi_incdir} -L${oshmpi_libdir} -L${oshmpi_libdir} -Wl,-rpath -Wl,${oshmpi_libdir} -loshmpi ${wrapper_ldflags} ${wrapper_libs}"
+    exit 0
+  fi
+done
+
 ${mpicxx} -I${oshmpi_incdir} "${allargs[@]}" -L${oshmpi_libdir} -L${oshmpi_libdir} -Wl,-rpath -Wl,${oshmpi_libdir} -loshmpi \
   ${wrapper_ldflags} ${wrapper_libs}
 
