@@ -9,6 +9,8 @@
 
 #include <shmem.h>
 
+#define SHMEMX_TEAM_NODE  ((shmem_team_t)0x70001)
+
 typedef void *shmemx_space_t;
 /*
  * ZE device handles are struct pointers, while CUDA handles are integers. If

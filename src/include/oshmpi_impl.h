@@ -202,6 +202,13 @@ typedef struct {
     int team_shared_n_pes;
     OSHMPI_team_t *team_shared; /* cache a team object for easier code in split */
 
+    /* cache of comm, group, my_pe, n_pes for SHMEMX_TEAM_NODE */
+    MPI_Comm team_node_comm;  /* shared split of COMM_WORLD */
+    MPI_Group team_node_group;
+    int team_node_my_pe;
+    int team_node_n_pes;
+    OSHMPI_team_t *team_node; /* cache a team object for easier code in split */
+
     OSHMPI_sobj_attr_t symm_heap_attr;
     OSHMPI_sobj_attr_t symm_data_attr;
 

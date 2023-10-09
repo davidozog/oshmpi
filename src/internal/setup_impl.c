@@ -821,6 +821,21 @@ void OSHMPI_initialize_thread(int required, int *provided)
     OSHMPI_global.team_shared->n_pes = OSHMPI_global.team_shared_n_pes;
     OSHMPI_global.team_shared->config.num_contexts = 0;
 
+    /* Create SHMEMX_TEAM_NODE */
+    OSHMPI_CALLMPI(MPI_Comm_split(OSHMPI_global.team_world_comm, MPI_COMM_TYPE_SHARED,
+                                  OSHMPI_global.team_world_my_pe,
+                                  &(OSHMPI_global.team_node_comm)));
+    OSHMPI_CALLMPI(MPI_Comm_size(OSHMPI_global.team_node_comm, &OSHMPI_global.team_node_n_pes));
+    OSHMPI_CALLMPI(MPI_Comm_rank(OSHMPI_global.team_node_comm, &OSHMPI_global.team_node_my_pe));
+    OSHMPI_CALLMPI(MPI_Comm_group(OSHMPI_global.team_node_comm,
+                                  &OSHMPI_global.team_node_group));
+    OSHMPI_team_create(&OSHMPI_global.team_node);
+    OSHMPI_global.team_node->comm = OSHMPI_global.team_node_comm;
+    OSHMPI_global.team_node->group = OSHMPI_global.team_node_group;
+    OSHMPI_global.team_node->my_pe = OSHMPI_global.team_node_my_pe;
+    OSHMPI_global.team_node->n_pes = OSHMPI_global.team_node_n_pes;
+    OSHMPI_global.team_node->config.num_contexts = 0;
+
     initialize_mpit();
     print_env();
 
@@ -899,6 +914,7 @@ static void finalize_impl(void)
     OSHMPI_sobj_destroy_attr(&OSHMPI_global.symm_heap_attr);
     OSHMPI_global.is_initialized = 0;
 
+    OSHMPI_team_destroy(&OSHMPI_global.team_node);
     OSHMPI_team_destroy(&OSHMPI_global.team_shared);
     OSHMPI_team_destroy(&OSHMPI_global.team_world);
 

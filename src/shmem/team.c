@@ -20,6 +20,8 @@ int shmem_team_my_pe(shmem_team_t team)
         return OSHMPI_global.team_world_my_pe;
     } else if (team == SHMEM_TEAM_SHARED) {
         return OSHMPI_global.team_shared_my_pe;
+    } else if (team == SHMEMX_TEAM_NODE) {
+        return OSHMPI_global.team_node_my_pe;
     } else {
         _team = OSHMPI_TEAM_HANDLE_TO_OBJ(team);
         return _team->my_pe;
@@ -38,6 +40,8 @@ int shmem_team_n_pes(shmem_team_t team)
         return OSHMPI_global.team_world_n_pes;
     } else if (team == SHMEM_TEAM_SHARED) {
         return OSHMPI_global.team_shared_n_pes;
+    } else if (team == SHMEMX_TEAM_NODE) {
+        return OSHMPI_global.team_node_n_pes;
     } else {
         _team = OSHMPI_TEAM_HANDLE_TO_OBJ(team);
         return _team->n_pes;
@@ -56,6 +60,8 @@ int shmem_team_get_config(shmem_team_t team, long config_mask, shmem_team_config
         *config = OSHMPI_global.team_world->config;
     } else if (team == SHMEM_TEAM_SHARED) {
         *config = OSHMPI_global.team_shared->config;
+    } else if (team == SHMEMX_TEAM_NODE) {
+        *config = OSHMPI_global.team_node->config;
     } else {
         _team = OSHMPI_TEAM_HANDLE_TO_OBJ(team);
         *config = _team->config;
@@ -79,6 +85,8 @@ int shmem_team_translate_pe(shmem_team_t src_team, int src_pe, shmem_team_t dest
         src_group = OSHMPI_global.team_world_group;
     } else if (src_team == SHMEM_TEAM_SHARED) {
         src_group = OSHMPI_global.team_shared_group;
+    } else if (src_team == SHMEMX_TEAM_NODE) {
+        src_group = OSHMPI_global.team_node_group;
     } else {
         _src_team = OSHMPI_TEAM_HANDLE_TO_OBJ(src_team);
         src_group = _src_team->group;
@@ -87,6 +95,8 @@ int shmem_team_translate_pe(shmem_team_t src_team, int src_pe, shmem_team_t dest
         dest_group = OSHMPI_global.team_world_group;
     } else if (dest_team == SHMEM_TEAM_SHARED) {
         dest_group = OSHMPI_global.team_shared_group;
+    } else if (dest_team == SHMEMX_TEAM_NODE) {
+        dest_group = OSHMPI_global.team_node_group;
     } else {
         _dest_team = OSHMPI_TEAM_HANDLE_TO_OBJ(dest_team);
         dest_group = _dest_team->group;
@@ -116,6 +126,8 @@ int shmem_team_split_strided(shmem_team_t parent_team, int start, int stride, in
         _parent_team = OSHMPI_global.team_world;
     } else if (parent_team == SHMEM_TEAM_SHARED) {
         _parent_team = OSHMPI_global.team_shared;
+    } else if (parent_team == SHMEMX_TEAM_NODE) {
+        _parent_team = OSHMPI_global.team_node;
     } else {
         _parent_team = OSHMPI_TEAM_HANDLE_TO_OBJ(parent_team);
     }
@@ -175,6 +187,8 @@ int shmem_team_split_2d(shmem_team_t parent_team, int xrange,
         _parent_team = OSHMPI_global.team_world;
     } else if (parent_team == SHMEM_TEAM_SHARED) {
         _parent_team = OSHMPI_global.team_shared;
+    } else if (parent_team == SHMEMX_TEAM_NODE) {
+        _parent_team = OSHMPI_global.team_node;
     } else {
         _parent_team = OSHMPI_TEAM_HANDLE_TO_OBJ(parent_team);
     }
@@ -214,7 +228,8 @@ int shmem_team_split_2d(shmem_team_t parent_team, int xrange,
 void shmem_team_destroy(shmem_team_t team)
 {
     OSHMPI_team_t *_team = NULL;
-    if (team == SHMEM_TEAM_INVALID || team == SHMEM_TEAM_WORLD || team == SHMEM_TEAM_SHARED) {
+    if (team == SHMEM_TEAM_INVALID || team == SHMEM_TEAM_WORLD || team == SHMEM_TEAM_SHARED
+            || team == SHMEMX_TEAM_NODE) {
         return;
     }
     _team = OSHMPI_TEAM_HANDLE_TO_OBJ(team);
