@@ -82,6 +82,19 @@ void *shmem_ptr(const void *dest, int pe)
     return (pe == OSHMPI_global.team_world_my_pe) ? (void *) dest : NULL;
 }
 
+void *shmem_team_ptr(shmem_team_t team, const void *dest, int pe)
+{
+    if (team == SHMEM_TEAM_INVALID) {
+        return NULL;
+    }
+
+    int global_pe = shmem_team_translate_pe(team, pe, SHMEM_TEAM_WORLD);
+
+    /* Do not support load/store for other processes */
+    return (global_pe == OSHMPI_global.team_world_my_pe) ? (void *) dest : NULL;
+}
+
+
 void shmem_info_get_version(int *major, int *minor)
 {
     *major = SHMEM_MAJOR_VERSION;

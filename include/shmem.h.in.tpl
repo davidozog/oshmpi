@@ -153,6 +153,7 @@ void shmem_global_exit(int status);
 int shmem_pe_accessible(int pe);
 int shmem_addr_accessible(const void *addr, int pe);
 void *shmem_ptr(const void *dest, int pe);
+void *shmem_team_ptr(shmem_team_t team, const void *dest, int pe);
 void shmem_info_get_version(int *major, int *minor);
 void shmem_info_get_name(char *name);
 /* (deprecated APIs) */
