@@ -8,31 +8,44 @@
 
 #include <shmem.h>
 #include "oshmpi_impl.h"
+#include "signal_impl.h"
 
 /* TPL_BLOCK_START */
 
 void shmem_TYPENAME_put_signal(TYPE * dest, const TYPE * source, size_t nelems, uint64_t *sig_addr,
                                uint64_t signal, int sig_op, int pe)
 {
-    OSHMPI_ASSERT(0);
+    OSHMPI_ctx_put_signal(SHMEM_CTX_DEFAULT, MPI_TYPE, sizeof(TYPE),
+                          source /* origin_addr */ , dest /* target_addr */ ,
+                          nelems, sig_addr, signal, sig_op, pe);
+    return;
 }
 
 void shmem_ctx_TYPENAME_put_signal(shmem_ctx_t ctx, TYPE * dest, const TYPE * source, size_t nelems,
                                    uint64_t *sig_addr, uint64_t signal, int sig_op, int pe)
 {
-    OSHMPI_ASSERT(0);
+    OSHMPI_ctx_put_signal(SHMEM_CTX_DEFAULT, MPI_TYPE, sizeof(TYPE),
+                          source /* origin_addr */ , dest /* target_addr */ ,
+                          nelems, sig_addr, signal, sig_op, pe);
+    return;
 }
 
 void shmem_TYPENAME_put_signal_nbi(TYPE * dest, const TYPE * source, size_t nelems,
                                    uint64_t *sig_addr, uint64_t signal, int sig_op, int pe)
 {
-    OSHMPI_ASSERT(0);
+    OSHMPI_ctx_put_signal(SHMEM_CTX_DEFAULT, MPI_TYPE, sizeof(TYPE),
+                          source /* origin_addr */ , dest /* target_addr */ ,
+                          nelems, sig_addr, signal, sig_op, pe);
+    return;
 }
 
 void shmem_ctx_TYPENAME_put_signal_nbi(shmem_ctx_t ctx, TYPE * dest, const TYPE * source,
                                        size_t nelems, uint64_t *sig_addr, uint64_t signal,
                                        int sig_op, int pe)
 {
-    OSHMPI_ASSERT(0);
+    OSHMPI_ctx_put_signal(SHMEM_CTX_DEFAULT, MPI_TYPE, sizeof(TYPE),
+                          source /* origin_addr */ , dest /* target_addr */ ,
+                          nelems, sig_addr, signal, sig_op, pe);
+    return;
 }
 /* TPL_BLOCK_END */

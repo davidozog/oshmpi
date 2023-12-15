@@ -465,6 +465,13 @@ void OSHMPI_rma_am_get_pkt_cb(int origin_rank, OSHMPI_am_pkt_t * pkt);
 void OSHMPI_rma_am_iput_pkt_cb(int origin_rank, OSHMPI_am_pkt_t * pkt);
 void OSHMPI_rma_am_iget_pkt_cb(int origin_rank, OSHMPI_am_pkt_t * pkt);
 
+/* Subroutines for signaling. */
+OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_ctx_put_signal(shmem_ctx_t ctx,
+                                                       MPI_Datatype mpi_type, size_t typesz,
+                                                       const void *origin_addr, void *target_addr,
+                                                       size_t nelems, uint64_t *sig_addr, uint64_t signal,
+                                                       int sig_op, int pe);
+
 /* Subroutines for collectives. */
 void OSHMPI_coll_initialize(void);
 void OSHMPI_coll_finalize(void);
@@ -857,5 +864,6 @@ OSHMPI_STATIC_INLINE_PREFIX size_t OSHMPI_get_mspace_sz(size_t bufsz)
 #include "p2p_impl.h"
 #include "lock_impl.h"
 #include "am_progress_impl.h"
+#include "signal_impl.h"
 
 #endif /* OSHMPI_IMPL_H */
