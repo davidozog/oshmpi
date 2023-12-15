@@ -320,7 +320,9 @@ void shmem_alltoalls64(void *dest, const void *source, ptrdiff_t dst, ptrdiff_t 
 
 /* (deprecated APIs) */
 #if (OSHMPI_HAVE_C11 == 0)
+#if !(defined(c_plusplus) || defined(__cplusplus))
 void shmem_wait_until(long *ivar, int cmp, long cmp_value);
+#endif
 void shmem_wait(long *ivar, long cmp_value);
 #endif
 void shmem_short_wait(short *ivar, short cmp_value);
