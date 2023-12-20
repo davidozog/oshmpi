@@ -148,10 +148,14 @@ int shmem_team_split_strided(shmem_team_t parent_team, int start, int stride, in
      * 1. rank of the PE in parent team need to be between start and end (calculated using stride
      * and size).
      * 2. rank of the PE must be selected by the (start, stride, size). */
-    rank_selected = (_parent_team->my_pe >= start) && (_parent_team->my_pe <= end_pe)
-        && ((_parent_team->my_pe - start) % stride == 0);
+    int n = (_parent_team->my_pe - start) / stride;
+    rank_selected = ((_parent_team->my_pe >= start && stride > 0) ||
+                     (_parent_team->my_pe <= start && stride < 0)) &&
+                    ((_parent_team->my_pe <= end_pe && stride > 0) ||
+                     (_parent_team->my_pe >= end_pe && stride < 0))
+        && ((_parent_team->my_pe - start) % stride == 0) && (n < size);
 
-    OSHMPI_team_split(_parent_team, (rank_selected) ? 1 : MPI_UNDEFINED, &_new_team);
+    OSHMPI_team_split(_parent_team, (rank_selected) ? 1 : MPI_UNDEFINED, stride, &_new_team);
 
     if (_new_team != NULL) {
         /* handle config if there is config and config_mask != 0 */
@@ -199,8 +203,8 @@ int shmem_team_split_2d(shmem_team_t parent_team, int xrange,
     int x_pos = _parent_team->my_pe % xrange;
     int y_pos = _parent_team->my_pe / xrange;
 
-    OSHMPI_team_split(_parent_team, y_pos, &_new_x_team);
-    OSHMPI_team_split(_parent_team, x_pos, &_new_y_team);
+    OSHMPI_team_split(_parent_team, y_pos, 1, &_new_x_team);
+    OSHMPI_team_split(_parent_team, x_pos, 1, &_new_y_team);
 
     if (_new_x_team != NULL) {
         if (xaxis_config && xaxis_mask != 0) {
