@@ -228,6 +228,9 @@ typedef struct {
     unsigned int amo_direct;    /* Valid only when --enable-amo=runtime is set.
                                  * User may control it through env var
                                  * OSHMPI_AMO_OPS (see amo_ops in OSHMPI_env_t). */
+
+    OSHMPIU_thread_cs_t rand_r_cs;
+    unsigned int rand_r_cs_seed;
 } OSHMPI_global_t;
 
 typedef enum {
