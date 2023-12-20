@@ -475,6 +475,12 @@ OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_ctx_put_signal(shmem_ctx_t ctx,
                                                        size_t nelems, uint64_t *sig_addr, uint64_t signal,
                                                        int sig_op, int pe);
 
+OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_ctx_put_signal_nbi(shmem_ctx_t ctx,
+                                                           MPI_Datatype mpi_type, size_t typesz,
+                                                           const void *origin_addr, void *target_addr,
+                                                           size_t nelems, uint64_t *sig_addr, uint64_t signal,
+                                                           int sig_op, int pe);
+
 /* Subroutines for collectives. */
 void OSHMPI_coll_initialize(void);
 void OSHMPI_coll_finalize(void);
