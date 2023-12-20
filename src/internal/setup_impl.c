@@ -856,6 +856,9 @@ void OSHMPI_initialize_thread(int required, int *provided)
     OSHMPI_am_initialize();
     OSHMPI_space_initialize();
 
+    OSHMPI_THREAD_INIT_CS(&OSHMPI_global.rand_r_cs);
+    OSHMPI_global.rand_r_cs_seed = OSHMPI_global.team_world_my_pe;
+
     OSHMPI_am_progress_mpi_barrier(OSHMPI_global.team_world_comm);
     OSHMPI_global.is_initialized = 1;
 
@@ -917,6 +920,8 @@ static void finalize_impl(void)
     OSHMPI_team_destroy(&OSHMPI_global.team_node);
     OSHMPI_team_destroy(&OSHMPI_global.team_shared);
     OSHMPI_team_destroy(&OSHMPI_global.team_world);
+
+    OSHMPI_THREAD_DESTROY_CS(&OSHMPI_global.rand_r_cs);
 
     OSHMPI_CALLMPI(MPI_T_finalize());
     OSHMPI_CALLMPI(MPI_Finalize());
