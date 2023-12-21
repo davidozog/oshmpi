@@ -40,8 +40,9 @@
 typedef enum {
     OSHMPI_SOBJ_SYMM_DATA = 0,
     OSHMPI_SOBJ_SYMM_HEAP = 1,
-    OSHMPI_SOBJ_SPACE_HEAP = 2,
-    OSHMPI_SOBJ_SPACE_ATTACHED_HEAP = 3,
+    OSHMPI_SOBJ_SYMM_HEAP_EXTERNAL = 3,
+    OSHMPI_SOBJ_SPACE_HEAP = 4,
+    OSHMPI_SOBJ_SPACE_ATTACHED_HEAP = 5,
 } OSHMPI_sobj_kind_t;
 
 #define OSHMPI_SOBJ_HANDLE_KIND_MASK 0xc0000000
@@ -211,17 +212,23 @@ typedef struct {
 
     OSHMPI_sobj_attr_t symm_heap_attr;
     OSHMPI_sobj_attr_t symm_data_attr;
+    OSHMPI_sobj_attr_t symm_heap_external_attr;
 
 #ifdef OSHMPI_ENABLE_DYNAMIC_WIN
     OSHMPI_ictx_t symm_ictx;
 #else
     OSHMPI_ictx_t symm_heap_ictx;
     OSHMPI_ictx_t symm_data_ictx;
+    OSHMPI_ictx_t symm_heap_external_ictx;
 #endif
 
     MPI_Aint symm_heap_true_size;
     mspace symm_heap_mspace;
     OSHMPIU_thread_cs_t symm_heap_mspace_cs;
+
+    //MPI_Aint symm_heap_external_true_size;
+    //mspace symm_heap_external_mspace;
+    //OSHMPIU_thread_cs_t symm_heap_external_mspace_cs;
 
     OSHMPI_space_list_t space_list;
 
@@ -401,6 +408,9 @@ void OSHMPI_space_detach(OSHMPI_space_t * space);
 void *OSHMPI_space_malloc(OSHMPI_space_t * space, size_t size);
 void *OSHMPI_space_align(OSHMPI_space_t * space, size_t alignment, size_t size);
 void OSHMPI_space_free(OSHMPI_space_t * space, void *ptr);
+
+void OSHMPI_heap_preinit_thread(int requested, int *provided);
+void OSHMPI_heap_postinit(void);
 
 void OSHMPI_ctx_destroy(OSHMPI_ctx_t * ctx);
 
@@ -712,6 +722,17 @@ OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_sobj_query_attr_ictx(OSHMPI_ctx_t * ctx,
         return;
     }
 
+    if (OSHMPI_sobj_check_range(abs_addr, OSHMPI_global.symm_heap_external_attr)) {
+#ifdef OSHMPI_ENABLE_DYNAMIC_WIN
+        *ictx_ptr = &OSHMPI_global.symm_ictx;
+#else
+        *ictx_ptr = &OSHMPI_global.symm_heap_external_ictx;
+#endif
+        *sobj_attr_ptr = &OSHMPI_global.symm_heap_external_attr;
+        return;
+    }
+
+
     if (OSHMPI_sobj_check_range(abs_addr, OSHMPI_global.symm_data_attr)) {
 #ifdef OSHMPI_ENABLE_DYNAMIC_WIN
         *ictx_ptr = &OSHMPI_global.symm_ictx;
@@ -752,6 +773,9 @@ OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_sobj_trans_disp_to_vaddr(uint32_t sobj_h
             break;
         case OSHMPI_SOBJ_SYMM_DATA:
             *vaddr = (void *) ((char *) OSHMPI_global.symm_data_attr.base + disp);
+            break;
+        case OSHMPI_SOBJ_SYMM_HEAP_EXTERNAL:
+            *vaddr = (void *) ((char *) OSHMPI_global.symm_heap_external_attr.base + disp);
             break;
         case OSHMPI_SOBJ_SPACE_ATTACHED_HEAP:
             /* Search spaces */
