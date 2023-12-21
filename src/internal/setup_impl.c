@@ -867,6 +867,144 @@ void OSHMPI_initialize_thread(int required, int *provided)
         *provided = OSHMPI_global.thread_level;
 }
 
+void OSHMPI_heap_preinit_thread(int required, int *provided)
+{
+    int mpi_provided = 0, mpi_initialized = 0, shm_provided = 0, mpit_provided = 0;
+
+    if (OSHMPI_global.is_initialized)
+        goto fn_exit;
+
+    initialize_env();
+
+    OSHMPI_CALLMPI(MPI_T_init_thread(MPI_THREAD_SINGLE, &mpit_provided));
+    OSHMPI_ASSERT(mpit_provided >= MPI_THREAD_SINGLE);  /* can only be MPI internal error */
+
+    if (required != SHMEM_THREAD_SINGLE && required != SHMEM_THREAD_FUNNELED
+        && required != SHMEM_THREAD_SERIALIZED && required != SHMEM_THREAD_MULTIPLE)
+        OSHMPI_ERR_ABORT("Unknown OpenSHMEM thread support level: %d\n", required);
+
+    /* Force thread multiple when async thread is enabled. */
+    if (OSHMPI_ENABLE_AM_ASYNC_THREAD_RUNTIME)
+        required = SHMEM_THREAD_MULTIPLE;
+
+    shm_provided = required;
+
+    /* Degrade thread safety if it is not set at configure */
+#ifdef OSHMPI_ENABLE_THREAD_SINGLE
+    if (required > SHMEM_THREAD_SINGLE)
+        shm_provided = SHMEM_THREAD_SINGLE;
+#elif defined(OSHMPI_ENABLE_THREAD_FUNNELED)
+    if (required > SHMEM_THREAD_FUNNELED)
+        shm_provided = SHMEM_THREAD_FUNNELED;
+#elif defined(OSHMPI_ENABLE_THREAD_SERIALIZED)
+    if (required > SHMEM_THREAD_SERIALIZED)
+        shm_provided = SHMEM_THREAD_SERIALIZED;
+#endif
+    if (required != shm_provided)
+        OSHMPI_DBGMSG("OSHMPI %s support is not enabled at configure (--enable-threads).\n",
+                      OSHMPI_thread_level_str(required));
+
+    OSHMPI_CALLMPI(MPI_Initialized(&mpi_initialized));
+    if (mpi_initialized) {
+        /* If MPI has already be initialized, we only query the thread safety. */
+        OSHMPI_CALLMPI(MPI_Query_thread(&mpi_provided));
+    } else {
+        OSHMPI_CALLMPI(MPI_Init_thread(NULL, NULL, shm_provided, &mpi_provided));
+    }
+
+    /* Degrade thread safety if it is not supported by MPI */
+    if (mpi_provided < shm_provided) {
+        OSHMPI_DBGMSG("The MPI library does not support the required thread support:"
+                      "required: %s, provided: %s.\n",
+                      OSHMPI_thread_level_str(shm_provided), OSHMPI_thread_level_str(mpi_provided));
+        shm_provided = mpi_provided;
+    }
+
+    if (OSHMPI_env.enable_async_thread && shm_provided < SHMEM_THREAD_MULTIPLE) {
+        OSHMPI_ERR_ABORT("Asynchronous thread requires THREAD_MULTIPLE safety "
+                         "but we cannot enable it at runtime. "
+                         "Enable SHMEM_DEBUG to check the reason.\n");
+    }
+
+    /* OSHMPI internal routines are protected only when user explicitly requires multiple
+     * safety, thus we do not expose the actual safety provided by MPI if it is higher. */
+    OSHMPI_global.thread_level = shm_provided;
+
+    /* Duplicate comm world for oshmpi use. This automatically become SHMEM_TEAM_WORLD */
+    OSHMPI_CALLMPI(MPI_Comm_dup(MPI_COMM_WORLD, &OSHMPI_global.team_world_comm));
+    OSHMPI_CALLMPI(MPI_Comm_size(OSHMPI_global.team_world_comm, &OSHMPI_global.team_world_n_pes));
+    OSHMPI_CALLMPI(MPI_Comm_rank(OSHMPI_global.team_world_comm, &OSHMPI_global.team_world_my_pe));
+    OSHMPI_CALLMPI(MPI_Comm_group(OSHMPI_global.team_world_comm, &OSHMPI_global.team_world_group));
+    OSHMPI_team_create(&OSHMPI_global.team_world);
+    OSHMPI_global.team_world->comm = OSHMPI_global.team_world_comm;
+    OSHMPI_global.team_world->group = OSHMPI_global.team_world_group;
+    OSHMPI_global.team_world->my_pe = OSHMPI_global.team_world_my_pe;
+    OSHMPI_global.team_world->n_pes = OSHMPI_global.team_world_n_pes;
+    OSHMPI_global.team_world->config.num_contexts = 0;
+
+    /* Create SHMEM_TEAM_SHARED */
+    OSHMPI_CALLMPI(MPI_Comm_split(OSHMPI_global.team_world_comm, MPI_COMM_TYPE_SHARED,
+                                  OSHMPI_global.team_world_my_pe,
+                                  &(OSHMPI_global.team_shared_comm)));
+    OSHMPI_CALLMPI(MPI_Comm_size(OSHMPI_global.team_shared_comm, &OSHMPI_global.team_shared_n_pes));
+    OSHMPI_CALLMPI(MPI_Comm_rank(OSHMPI_global.team_shared_comm, &OSHMPI_global.team_shared_my_pe));
+    OSHMPI_CALLMPI(MPI_Comm_group(OSHMPI_global.team_shared_comm,
+                                  &OSHMPI_global.team_shared_group));
+    OSHMPI_team_create(&OSHMPI_global.team_shared);
+    OSHMPI_global.team_shared->comm = OSHMPI_global.team_shared_comm;
+    OSHMPI_global.team_shared->group = OSHMPI_global.team_shared_group;
+    OSHMPI_global.team_shared->my_pe = OSHMPI_global.team_shared_my_pe;
+    OSHMPI_global.team_shared->n_pes = OSHMPI_global.team_shared_n_pes;
+    OSHMPI_global.team_shared->config.num_contexts = 0;
+
+    /* Create SHMEMX_TEAM_NODE */
+    OSHMPI_CALLMPI(MPI_Comm_split(OSHMPI_global.team_world_comm, MPI_COMM_TYPE_SHARED,
+                                  OSHMPI_global.team_world_my_pe,
+                                  &(OSHMPI_global.team_node_comm)));
+    OSHMPI_CALLMPI(MPI_Comm_size(OSHMPI_global.team_node_comm, &OSHMPI_global.team_node_n_pes));
+    OSHMPI_CALLMPI(MPI_Comm_rank(OSHMPI_global.team_node_comm, &OSHMPI_global.team_node_my_pe));
+    OSHMPI_CALLMPI(MPI_Comm_group(OSHMPI_global.team_node_comm,
+                                  &OSHMPI_global.team_node_group));
+    OSHMPI_team_create(&OSHMPI_global.team_node);
+    OSHMPI_global.team_node->comm = OSHMPI_global.team_node_comm;
+    OSHMPI_global.team_node->group = OSHMPI_global.team_node_group;
+    OSHMPI_global.team_node->my_pe = OSHMPI_global.team_node_my_pe;
+    OSHMPI_global.team_node->n_pes = OSHMPI_global.team_node_n_pes;
+    OSHMPI_global.team_node->config.num_contexts = 0;
+
+    initialize_mpit();
+    print_env();
+
+    OSHMPI_global.page_sz = (size_t) sysconf(_SC_PAGESIZE);
+    OSHMPIU_initialize_symm_mem(OSHMPI_global.team_world_comm);
+
+  fn_exit:
+    if (provided)
+        *provided = OSHMPI_global.thread_level;
+}
+
+void OSHMPI_heap_postinit(void)
+{
+#ifdef OSHMPI_ENABLE_DYNAMIC_WIN
+    initialize_symm_win();
+    attach_symm_text();
+#else
+    initialize_symm_text();
+    initialize_symm_heap();
+#endif
+
+    OSHMPI_strided_initialize();
+    OSHMPI_coll_initialize();
+    OSHMPI_am_initialize();
+    OSHMPI_space_initialize();
+
+    OSHMPI_THREAD_INIT_CS(&OSHMPI_global.rand_r_cs);
+    OSHMPI_global.rand_r_cs_seed = OSHMPI_global.team_world_my_pe;
+
+    OSHMPI_am_progress_mpi_barrier(OSHMPI_global.team_world_comm);
+    OSHMPI_global.is_initialized = 1;
+}
+
 static void finalize_impl(void)
 {
     int mpi_finalized = 0;

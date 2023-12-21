@@ -18,6 +18,9 @@ OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_barrier_all(void)
     OSHMPI_CALLMPI(MPI_Win_flush_all(OSHMPI_global.symm_heap_ictx.win));
     OSHMPI_CALLMPI(MPI_Win_flush_all(OSHMPI_global.symm_data_ictx.win));
 #endif
+    if (OSHMPI_global.symm_heap_external_ictx.win) // FIXME w/ macro?
+        OSHMPI_CALLMPI(MPI_Win_flush_all(OSHMPI_global.symm_heap_external_ictx.win));
+
     /* Ensure AM completion (e.g., AM AMOs) */
     OSHMPI_am_flush_all(SHMEM_CTX_DEFAULT);
 
@@ -28,6 +31,9 @@ OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_barrier_all(void)
     OSHMPI_CALLMPI(MPI_Win_sync(OSHMPI_global.symm_heap_ictx.win));
     OSHMPI_CALLMPI(MPI_Win_sync(OSHMPI_global.symm_data_ictx.win));
 #endif
+    if (OSHMPI_global.symm_heap_external_ictx.win) // FIXME w/ macro?
+        OSHMPI_CALLMPI(MPI_Win_sync(OSHMPI_global.symm_heap_external_ictx.win));
+
     OSHMPI_am_progress_mpi_barrier(OSHMPI_global.team_world_comm);
 }
 
@@ -40,6 +46,8 @@ OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_sync_all(void)
     OSHMPI_CALLMPI(MPI_Win_sync(OSHMPI_global.symm_heap_ictx.win));
     OSHMPI_CALLMPI(MPI_Win_sync(OSHMPI_global.symm_data_ictx.win));
 #endif
+    if (OSHMPI_global.symm_heap_external_ictx.win) // FIXME w/ macro?
+        OSHMPI_CALLMPI(MPI_Win_sync(OSHMPI_global.symm_heap_external_ictx.win));
     OSHMPI_am_progress_mpi_barrier(OSHMPI_global.team_world_comm);
 }
 
