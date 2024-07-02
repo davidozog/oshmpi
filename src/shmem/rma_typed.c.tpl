@@ -66,6 +66,20 @@ void shmem_ctx_TYPENAME_iget(shmem_ctx_t ctx, TYPE * dest, const TYPE * source, 
                     source /* target_addr */ , dst, sst, nelems, pe);
 }
 
+void shmemx_TYPENAME_ibget(TYPE * dest, const TYPE * source, ptrdiff_t dst, ptrdiff_t sst,
+                         size_t nelems, size_t nblocks, int pe)
+{
+    OSHMPI_ctx_ibget(SHMEM_CTX_DEFAULT, MPI_TYPE, OSHMPI_AM_MPI_TYPE, dest /* origin_addr */ ,
+                    source /* target_addr */ , dst, sst, nelems, nblocks, pe);
+}
+
+void shmemx_ctx_TYPENAME_ibget(shmem_ctx_t ctx, TYPE * dest, const TYPE * source, ptrdiff_t dst,
+                             ptrdiff_t sst, size_t nelems, size_t nblocks, int pe)
+{
+    OSHMPI_ctx_ibget(ctx, MPI_TYPE, OSHMPI_AM_MPI_TYPE, dest /* origin_addr */ ,
+                    source /* target_addr */ , dst, sst, nelems, nblocks, pe);
+}
+
 void shmem_TYPENAME_p(TYPE * dest, TYPE value, int pe)
 {
     OSHMPI_ctx_put(SHMEM_CTX_DEFAULT, MPI_TYPE, sizeof(TYPE), &value /* origin_addr */ ,
@@ -103,6 +117,20 @@ void shmem_ctx_TYPENAME_iput(shmem_ctx_t ctx, TYPE * dest, const TYPE * source,
 {
     OSHMPI_ctx_iput(ctx, MPI_TYPE, OSHMPI_AM_MPI_TYPE, source /* origin_addr */ , dest /* target_addr */ ,
                     dst, sst, nelems, pe);
+}
+
+void shmemx_TYPENAME_ibput(TYPE * dest, const TYPE * source, ptrdiff_t dst,
+                         ptrdiff_t sst, size_t nelems, size_t nblocks, int pe)
+{
+    OSHMPI_ctx_ibput(SHMEM_CTX_DEFAULT, MPI_TYPE, OSHMPI_AM_MPI_TYPE, source /* origin_addr */ ,
+                    dest /* target_addr */ , dst, sst, nelems, nblocks, pe);
+}
+
+void shmemx_ctx_TYPENAME_ibput(shmem_ctx_t ctx, TYPE * dest, const TYPE * source,
+                             ptrdiff_t dst, ptrdiff_t sst, size_t nelems, size_t nblocks, int pe)
+{
+    OSHMPI_ctx_ibput(ctx, MPI_TYPE, OSHMPI_AM_MPI_TYPE, source /* origin_addr */ , dest /* target_addr */ ,
+                    dst, sst, nelems, nblocks, pe);
 }
 
 void shmem_TYPENAME_put_nbi(TYPE * dest, const TYPE * source, size_t nelems, int pe)

@@ -125,6 +125,8 @@ typedef struct OSHMPI_am_iget_pkt {
 } OSHMPI_am_iget_pkt_t;
 
 typedef OSHMPI_am_iget_pkt_t OSHMPI_am_iput_pkt_t;
+typedef OSHMPI_am_iget_pkt_t OSHMPI_am_ibput_pkt_t;
+typedef OSHMPI_am_iget_pkt_t OSHMPI_am_ibget_pkt_t;
 
 typedef struct {
     int ptag;
@@ -140,6 +142,8 @@ typedef struct OSHMPI_am_pkt {
         OSHMPI_am_get_pkt_t get;
         OSHMPI_am_iput_pkt_t iput;
         OSHMPI_am_iget_pkt_t iget;
+        OSHMPI_am_iput_pkt_t ibput;
+        OSHMPI_am_iget_pkt_t ibget;
         OSHMPI_am_flush_pkt_t flush;
     };
 } OSHMPI_am_pkt_t;
