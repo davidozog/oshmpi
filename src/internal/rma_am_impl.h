@@ -126,6 +126,52 @@ OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_rma_am_iput(OSHMPI_ictx_t * ictx,
     OSHMPI_free_strided_dtype(mpi_type, &origin_type);
 }
 
+/* Issue a strided PUT operation. Return immediately after sent PUT packet (local complete) */
+OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_rma_am_ibput(OSHMPI_ictx_t * ictx,
+                                                     MPI_Datatype mpi_type,
+                                                     OSHMPI_am_mpi_datatype_index_t mpi_type_idx,
+                                                     const void *origin_addr, void *target_addr,
+                                                     ptrdiff_t origin_st, ptrdiff_t target_st,
+                                                     size_t nelems, size_t nblocks, int pe,
+                                                     OSHMPI_sobj_attr_t * sobj_attr)
+{
+    OSHMPI_am_pkt_t pkt;
+    OSHMPI_am_ibput_pkt_t *ibput_pkt = &pkt.ibput;
+    MPI_Request reqs[2];
+
+    pkt.type = OSHMPI_AM_PKT_IPUT;
+    ibput_pkt->mpi_type_idx = mpi_type_idx;
+    ibput_pkt->target_st = target_st;
+    ibput_pkt->nelems = nelems;
+    ibput_pkt->sobj_handle = sobj_attr->handle;
+    ibput_pkt->ptag = OSHMPI_am_get_pkt_ptag();
+
+    OSHMPI_sobj_trans_vaddr_to_disp(sobj_attr, (const void *) target_addr, pe, OSHMPI_RELATIVE_DISP,
+                                    &ibput_pkt->target_disp);
+    OSHMPI_ASSERT(ibput_pkt->target_disp >= 0);
+
+    OSHMPI_CALLMPI(MPI_Isend(&pkt, sizeof(OSHMPI_am_pkt_t), MPI_BYTE, pe, OSHMPI_AM_PKT_TAG,
+                             OSHMPI_am.comm, &reqs[0]));
+
+    MPI_Datatype origin_type = MPI_DATATYPE_NULL;
+    size_t origin_count = 0;
+    OSHMPI_create_strided_dtype(nelems, origin_st, mpi_type, 0 /* no required extent */ ,
+                                &origin_count, &origin_type);
+
+    OSHMPI_CALLMPI(MPI_Isend(origin_addr, origin_count, origin_type, pe, ibput_pkt->ptag,
+                             OSHMPI_am.comm, &reqs[1]));
+    OSHMPI_am_progress_mpi_waitall(2, reqs, MPI_STATUS_IGNORE);
+
+    OSHMPI_DBGMSG("packet type %d, sobj_handle 0x%x, target %d, datatype idx %d, "
+                  "origin_st 0x%lx, target_st 0x%lx, nelems %ld, addr %p, disp 0x%lx, ptag %d\n",
+                  pkt.type, ibput_pkt->sobj_handle, pe, mpi_type_idx, origin_st, target_st, nelems,
+                  target_addr, ibput_pkt->target_disp, ibput_pkt->ptag);
+
+    /* Indicate outstanding AM */
+    OSHMPIU_ATOMIC_FLAG_STORE(OSHMPI_am.outstanding_op_flags[pe], 1);
+    OSHMPI_free_strided_dtype(mpi_type, &origin_type);
+}
+
 /* Issue a strided GET operation. Return after receiving return value. */
 OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_rma_am_iget(OSHMPI_ictx_t * ictx,
                                                     MPI_Datatype mpi_type,
@@ -166,6 +212,53 @@ OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_rma_am_iget(OSHMPI_ictx_t * ictx,
                   "origin_st 0x%lx, target_st 0x%lx, nelems %ld, addr %p, disp 0x%lx, ptag %d\n",
                   pkt.type, iget_pkt->sobj_handle, pe, mpi_type_idx, origin_st, target_st, nelems,
                   target_addr, iget_pkt->target_disp, iget_pkt->ptag);
+
+    /* Reset flag since remote PE should have finished previous put
+     * before handling this get. */
+    OSHMPIU_ATOMIC_FLAG_STORE(OSHMPI_am.outstanding_op_flags[pe], 0);
+    OSHMPI_free_strided_dtype(mpi_type, &origin_type);
+}
+
+/* Issue a strided GET operation. Return after receiving return value. */
+OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_rma_am_ibget(OSHMPI_ictx_t * ictx,
+                                                    MPI_Datatype mpi_type,
+                                                    OSHMPI_am_mpi_datatype_index_t mpi_type_idx,
+                                                    void *origin_addr, const void *target_addr,
+                                                    ptrdiff_t origin_st, ptrdiff_t target_st,
+                                                    size_t nelems, size_t nblocks, int pe,
+                                                    OSHMPI_sobj_attr_t * sobj_attr)
+{
+    OSHMPI_am_pkt_t pkt;
+    OSHMPI_am_ibget_pkt_t *ibget_pkt = &pkt.ibget;
+    MPI_Request reqs[2];
+
+    pkt.type = OSHMPI_AM_PKT_IGET;
+    ibget_pkt->mpi_type_idx = mpi_type_idx;
+    ibget_pkt->target_st = target_st;
+    ibget_pkt->nelems = nelems;
+    ibget_pkt->sobj_handle = sobj_attr->handle;
+    ibget_pkt->ptag = OSHMPI_am_get_pkt_ptag();
+
+    OSHMPI_sobj_trans_vaddr_to_disp(sobj_attr, target_addr, pe, OSHMPI_RELATIVE_DISP,
+                                    &ibget_pkt->target_disp);
+    OSHMPI_ASSERT(ibget_pkt->target_disp >= 0);
+
+    OSHMPI_CALLMPI(MPI_Isend(&pkt, sizeof(OSHMPI_am_pkt_t), MPI_BYTE, pe, OSHMPI_AM_PKT_TAG,
+                             OSHMPI_am.comm, &reqs[0]));
+
+    MPI_Datatype origin_type = MPI_DATATYPE_NULL;
+    size_t origin_count = 0;
+    OSHMPI_create_strided_dtype(nelems, origin_st, mpi_type, 0 /* no required extent */ ,
+                                &origin_count, &origin_type);
+
+    OSHMPI_CALLMPI(MPI_Irecv(origin_addr, origin_count, origin_type, pe, ibget_pkt->ptag,
+                             OSHMPI_am.ack_comm, &reqs[1]));
+    OSHMPI_am_progress_mpi_waitall(2, reqs, MPI_STATUS_IGNORE);
+
+    OSHMPI_DBGMSG("packet type %d, sobj_handle 0x%x, target %d, datatype idx %d, "
+                  "origin_st 0x%lx, target_st 0x%lx, nelems %ld, addr %p, disp 0x%lx, ptag %d\n",
+                  pkt.type, ibget_pkt->sobj_handle, pe, mpi_type_idx, origin_st, target_st, nelems,
+                  target_addr, ibget_pkt->target_disp, ibget_pkt->ptag);
 
     /* Reset flag since remote PE should have finished previous put
      * before handling this get. */
