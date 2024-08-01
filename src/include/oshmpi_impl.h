@@ -306,6 +306,8 @@ typedef struct {
     OSHMPI_dbg_mode_t amo_dbg_mode;
     OSHMPI_dbg_mode_t rma_dbg_mode;
 #endif
+    unsigned int team_shared_only_self; /* OSHMPI_TEAM_SHARED_ONLY_SELF: only include the self-PE
+                                         * in SHMEM_TEAM_SHARED. */
 } OSHMPI_env_t;
 
 #ifdef OSHMPI_ENABLE_IPO        /* define empty bracket to be compatible with code cleanup script */
@@ -369,6 +371,8 @@ do { \
         (obj) = OSHMPI_global.team_world; \
     } else if ((team) == SHMEM_TEAM_SHARED) { \
         (obj) = OSHMPI_global.team_shared; \
+    } else if ((team) == SHMEMX_TEAM_NODE) { \
+        (obj) = OSHMPI_global.team_node; \
     } else { \
         (obj) = OSHMPI_TEAM_HANDLE_TO_OBJ((team)); \
     } \

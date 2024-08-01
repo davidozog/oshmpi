@@ -689,6 +689,13 @@ static void initialize_env(void)
     val = getenv("OSHMPI_ENABLE_MPI_T");
     if (val && strlen(val) && atoi(val) == 0)
         OSHMPI_env.enable_mpit = 0;
+
+    /* If OSHMPI_TEAM_SHARED_ONLY_SELF is set, then only include
+     * the self PE in SHMEM_TEAM_SHARED: */
+    OSHMPI_env.team_shared_only_self = 0;
+    val = getenv("OSHMPI_TEAM_SHARED_ONLY_SELF");
+    if (val && strlen(val) && atoi(val) != 0)
+        OSHMPI_env.team_shared_only_self = 1;
 }
 
 static int set_mpit_cvar(const char *cvar_name, const void *val)
@@ -806,7 +813,6 @@ void OSHMPI_initialize_thread(int required, int *provided)
     OSHMPI_global.team_world->n_pes = OSHMPI_global.team_world_n_pes;
     OSHMPI_global.team_world->config.num_contexts = 0;
 
-    /* Create SHMEM_TEAM_SHARED */
     OSHMPI_CALLMPI(MPI_Comm_split(OSHMPI_global.team_world_comm, MPI_COMM_TYPE_SHARED,
                                   OSHMPI_global.team_world_my_pe,
                                   &(OSHMPI_global.team_shared_comm)));
@@ -870,6 +876,7 @@ void OSHMPI_initialize_thread(int required, int *provided)
 void OSHMPI_heap_preinit_thread(int required, int *provided)
 {
     int mpi_provided = 0, mpi_initialized = 0, shm_provided = 0, mpit_provided = 0;
+    int team_shared_color = 0;
 
     if (OSHMPI_global.is_initialized)
         goto fn_exit;
@@ -943,7 +950,11 @@ void OSHMPI_heap_preinit_thread(int required, int *provided)
     OSHMPI_global.team_world->config.num_contexts = 0;
 
     /* Create SHMEM_TEAM_SHARED */
-    OSHMPI_CALLMPI(MPI_Comm_split(OSHMPI_global.team_world_comm, MPI_COMM_TYPE_SHARED,
+    if (OSHMPI_env.team_shared_only_self)
+        team_shared_color = OSHMPI_global.team_world_my_pe;
+    else
+        team_shared_color = MPI_COMM_TYPE_SHARED;
+    OSHMPI_CALLMPI(MPI_Comm_split(OSHMPI_global.team_world_comm, team_shared_color,
                                   OSHMPI_global.team_world_my_pe,
                                   &(OSHMPI_global.team_shared_comm)));
     OSHMPI_CALLMPI(MPI_Comm_size(OSHMPI_global.team_shared_comm, &OSHMPI_global.team_shared_n_pes));
