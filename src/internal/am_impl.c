@@ -290,5 +290,8 @@ void OSHMPI_am_cb_progress(void)
     if (OSHMPI_ENABLE_AM_ASYNC_THREAD_RUNTIME)
         return;
 
+    if (OSHMPI_ENABLE_DIRECT_AMO_RUNTIME && OSHMPI_ENABLE_DIRECT_RMA_CONFIG)
+        return;
+
     am_cb_manual_progress();
 }
