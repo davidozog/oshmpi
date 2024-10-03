@@ -8,6 +8,11 @@
 
 #include <stdbool.h>
 
+shmem_team_t SHMEM_TEAM_WORLD = ((shmem_team_t)0x90000);
+shmem_team_t SHMEM_TEAM_SHARED = ((shmem_team_t)0x90001);
+shmem_team_t SHMEMX_TEAM_NODE = ((shmem_team_t)0x70001);
+shmem_team_t SHMEM_TEAM_INVALID = ((shmem_team_t)NULL);
+
 int shmem_team_my_pe(shmem_team_t team)
 {
     OSHMPI_team_t *_team = NULL;
