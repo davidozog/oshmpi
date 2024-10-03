@@ -88,9 +88,12 @@ typedef void* shmem_team_t;
 typedef struct {
     int num_contexts;
 } shmem_team_config_t;
-#define SHMEM_TEAM_WORLD   ((shmem_team_t)0x90000)
-#define SHMEM_TEAM_SHARED  ((shmem_team_t)0x90001)
-#define SHMEM_TEAM_INVALID ((shmem_team_t)NULL)
+extern shmem_team_t SHMEM_TEAM_WORLD;
+extern shmem_team_t SHMEM_TEAM_SHARED;
+extern shmem_team_t SHMEM_TEAM_INVALID;
+//#define SHMEM_TEAM_WORLD   ((shmem_team_t)0x90000)
+//#define SHMEM_TEAM_SHARED  ((shmem_team_t)0x90001)
+//#define SHMEM_TEAM_INVALID ((shmem_team_t)NULL)
 
 #define SHMEM_TEAM_NUM_CONTEXTS 0x091001L
 

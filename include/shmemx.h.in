@@ -9,7 +9,8 @@
 
 #include <shmem.h>
 
-#define SHMEMX_TEAM_NODE  ((shmem_team_t)0x70001)
+//#define SHMEMX_TEAM_NODE  ((shmem_team_t)0x70001)
+extern shmem_team_t SHMEMX_TEAM_NODE;
 
 #define SHMEMX_EXTERNAL_HEAP_ZE 0
 
