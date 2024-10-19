@@ -12,9 +12,11 @@ void shmem_TYPENAME_iget(TYPE * dest, const TYPE * source, ptrdiff_t dst, ptrdif
                          size_t nelems, int pe);
 void shmem_ctx_TYPENAME_iget(shmem_ctx_t ctx, TYPE * dest, const TYPE * source, ptrdiff_t dst,
                              ptrdiff_t sst, size_t nelems, int pe);
-void shmem_TYPENAME_ibget(TYPE * dest, const TYPE * source, ptrdiff_t dst, ptrdiff_t sst,
+/* FIXME: ibput and ibget should go in shmemx.h.in, but templating and C11
+ *        are not yet supported in shmemx, so they are placed here for now */
+void shmemx_TYPENAME_ibget(TYPE * dest, const TYPE * source, ptrdiff_t dst, ptrdiff_t sst,
                          size_t nelems, size_t nblocks, int pe);
-void shmem_ctx_TYPENAME_ibget(shmem_ctx_t ctx, TYPE * dest, const TYPE * source, ptrdiff_t dst,
+void shmemx_ctx_TYPENAME_ibget(shmem_ctx_t ctx, TYPE * dest, const TYPE * source, ptrdiff_t dst,
                              ptrdiff_t sst, size_t nelems, size_t nblocks, int pe);
 void shmem_TYPENAME_p(TYPE * dest, TYPE value, int pe);
 void shmem_ctx_TYPENAME_p(shmem_ctx_t ctx, TYPE * dest, TYPE value, int pe);
@@ -861,145 +863,145 @@ static inline void shmem_iget(shmem_ctx_t ctx, unsigned long long *target, const
     shmem_ctx_ulonglong_iget(ctx, target, source, tst, sst, len, pe);
 }
 
-static inline void shmem_ibget(float *target, const float *source,
+static inline void shmemx_ibget(float *target, const float *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_float_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_float_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, float *target, const float *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, float *target, const float *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_float_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_float_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(double *target, const double *source,
+static inline void shmemx_ibget(double *target, const double *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_double_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_double_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, double *target, const double *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, double *target, const double *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_double_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_double_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(long double *target, const long double *source,
+static inline void shmemx_ibget(long double *target, const long double *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_longdouble_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_longdouble_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, long double *target, const long double *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, long double *target, const long double *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_longdouble_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_longdouble_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(char *target, const char *source,
+static inline void shmemx_ibget(char *target, const char *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_char_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_char_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, char *target, const char *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, char *target, const char *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_char_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_char_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(signed char *target, const signed char *source,
+static inline void shmemx_ibget(signed char *target, const signed char *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_schar_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_schar_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, signed char *target, const signed char *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, signed char *target, const signed char *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_schar_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_schar_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(short *target, const short *source,
+static inline void shmemx_ibget(short *target, const short *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_short_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_short_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, short *target, const short *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, short *target, const short *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_short_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_short_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(int *target, const int *source,
+static inline void shmemx_ibget(int *target, const int *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_int_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_int_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, int *target, const int *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, int *target, const int *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_int_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_int_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(long *target, const long *source,
+static inline void shmemx_ibget(long *target, const long *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_long_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_long_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, long *target, const long *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, long *target, const long *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_long_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_long_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(long long *target, const long long *source,
+static inline void shmemx_ibget(long long *target, const long long *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_longlong_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_longlong_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, long long *target, const long long *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, long long *target, const long long *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_longlong_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_longlong_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(unsigned char *target, const unsigned char *source,
+static inline void shmemx_ibget(unsigned char *target, const unsigned char *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_uchar_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_uchar_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, unsigned char *target, const unsigned char *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, unsigned char *target, const unsigned char *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_uchar_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_uchar_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(unsigned short *target, const unsigned short *source,
+static inline void shmemx_ibget(unsigned short *target, const unsigned short *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ushort_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_ushort_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, unsigned short *target, const unsigned short *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, unsigned short *target, const unsigned short *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_ushort_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_ushort_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(unsigned int *target, const unsigned int *source,
+static inline void shmemx_ibget(unsigned int *target, const unsigned int *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_uint_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_uint_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, unsigned int *target, const unsigned int *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, unsigned int *target, const unsigned int *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_uint_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_uint_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(unsigned long *target, const unsigned long *source,
+static inline void shmemx_ibget(unsigned long *target, const unsigned long *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ulong_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_ulong_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, unsigned long *target, const unsigned long *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, unsigned long *target, const unsigned long *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_ulong_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_ulong_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(unsigned long long *target, const unsigned long long *source,
+static inline void shmemx_ibget(unsigned long long *target, const unsigned long long *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ulonglong_ibget(target, source, tst, sst, len, nblocks, pe);
+    shmemx_ulonglong_ibget(target, source, tst, sst, len, nblocks, pe);
 }
-static inline void shmem_ibget(shmem_ctx_t ctx, unsigned long long *target, const unsigned long long *source,
+static inline void shmemx_ibget(shmem_ctx_t ctx, unsigned long long *target, const unsigned long long *source,
                               ptrdiff_t tst, ptrdiff_t sst,
                               size_t len, size_t nblocks, int pe) {
-    shmem_ctx_ulonglong_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
+    shmemx_ctx_ulonglong_ibget(ctx, target, source, tst, sst, len, nblocks, pe);
 }
 
 /* Nonblocking block put/get */
@@ -1288,16 +1290,16 @@ static inline void shmem_get_nbi(shmem_ctx_t ctx, unsigned long long* dest, cons
         default: shmem_c11_type_ignore      \
     )(__VA_ARGS__)
 
-#define shmem_ibget(...)  \
+#define shmemx_ibget(...)  \
     _Generic(OSHMPI_C11_CTX_VAL(OSHMPI_C11_ARG0(__VA_ARGS__)), \
         shmem_ctx_t:  _Generic((OSHMPI_C11_ARG1(__VA_ARGS__)), \
 /* TPL_C11_BLOCK_START */
-            TYPE*: shmem_ctx_TYPENAME_ibget, \
+            TYPE*: shmemx_ctx_TYPENAME_ibget, \
 /* TPL_C11_BLOCK_END */
             default: shmem_c11_type_ignore  \
         ), \
         /* TPL_C11_BLOCK_START */
-        TYPE*: shmem_TYPENAME_ibget,     \
+        TYPE*: shmemx_TYPENAME_ibget,     \
         /* TPL_C11_BLOCK_END */
         default: shmem_c11_type_ignore      \
     )(__VA_ARGS__)

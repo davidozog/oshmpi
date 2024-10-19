@@ -58,24 +58,13 @@ OSHMPI_STATIC_INLINE_PREFIX void ctx_iput_nbi_impl(OSHMPI_ictx_t * ictx,
                                                    ptrdiff_t origin_st, size_t nelems, int pe,
                                                    OSHMPI_sobj_attr_t * sobj_attr)
 {
-    MPI_Datatype origin_type = MPI_DATATYPE_NULL, target_type = MPI_DATATYPE_NULL;
-    size_t origin_count = 0, target_count = 0;
+    int typesize = 0;
+    OSHMPI_CALLMPI(MPI_Type_size(mpi_type, &typesize));
 
-    OSHMPI_create_strided_dtype(nelems, origin_st, mpi_type, 0 /* no required extent */ ,
-                                &origin_count, &origin_type);
-    if (origin_st == target_st) {
-        target_type = origin_type;
-        target_count = origin_count;
-    } else
-        OSHMPI_create_strided_dtype(nelems, target_st, mpi_type, 0 /* no required extent */ ,
-                                    &target_count, &target_type);
-
-    ctx_put_nbi_impl(ictx, origin_type, target_type, origin_addr, target_addr,
-                     origin_count, target_count, pe, sobj_attr);
-
-    OSHMPI_free_strided_dtype(mpi_type, &origin_type);
-    if (origin_st != target_st)
-        OSHMPI_free_strided_dtype(mpi_type, &target_type);
+    for (int elem = 0; elem < nelems; elem++) {
+        ctx_put_nbi_impl(ictx, mpi_type, mpi_type, origin_addr + elem * typesize * origin_st,
+                         target_addr + elem * typesize * target_st, 1, 1, pe, sobj_attr);
+    }
 }
 
 OSHMPI_STATIC_INLINE_PREFIX void ctx_ibput_nbi_impl(OSHMPI_ictx_t * ictx,
@@ -85,24 +74,13 @@ OSHMPI_STATIC_INLINE_PREFIX void ctx_ibput_nbi_impl(OSHMPI_ictx_t * ictx,
                                                    size_t nblocks, int pe,
                                                    OSHMPI_sobj_attr_t * sobj_attr)
 {
-    MPI_Datatype origin_type = MPI_DATATYPE_NULL, target_type = MPI_DATATYPE_NULL;
-    size_t origin_count = 0, target_count = 0;
+    int typesize = 0;
+    OSHMPI_CALLMPI(MPI_Type_size(mpi_type, &typesize));
 
-    OSHMPI_create_strided_dtype(nelems, origin_st, mpi_type, 0 /* no required extent */ ,
-                                &origin_count, &origin_type);
-    if (origin_st == target_st) {
-        target_type = origin_type;
-        target_count = origin_count;
-    } else
-        OSHMPI_create_strided_dtype(nelems, target_st, mpi_type, 0 /* no required extent */ ,
-                                    &target_count, &target_type);
-
-    ctx_put_nbi_impl(ictx, origin_type, target_type, origin_addr, target_addr,
-                     origin_count, target_count, pe, sobj_attr);
-
-    OSHMPI_free_strided_dtype(mpi_type, &origin_type);
-    if (origin_st != target_st)
-        OSHMPI_free_strided_dtype(mpi_type, &target_type);
+    for (int block = 0; block < nblocks; block++) {
+        ctx_put_nbi_impl(ictx, mpi_type, mpi_type, origin_addr + block * typesize * origin_st,
+                         target_addr + block * typesize * target_st, nelems, nelems, pe, sobj_attr);
+    }
 }
 
 OSHMPI_STATIC_INLINE_PREFIX void ctx_iget_nbi_impl(OSHMPI_ictx_t * ictx,
@@ -111,24 +89,13 @@ OSHMPI_STATIC_INLINE_PREFIX void ctx_iget_nbi_impl(OSHMPI_ictx_t * ictx,
                                                    ptrdiff_t target_st, size_t nelems, int pe,
                                                    int completion, OSHMPI_sobj_attr_t * sobj_attr)
 {
-    MPI_Datatype origin_type = MPI_DATATYPE_NULL, target_type = MPI_DATATYPE_NULL;
-    size_t origin_count = 0, target_count = 0;
+    int typesize = 0;
+    OSHMPI_CALLMPI(MPI_Type_size(mpi_type, &typesize));
 
-    OSHMPI_create_strided_dtype(nelems, origin_st, mpi_type, 0 /* no required extent */ ,
-                                &origin_count, &origin_type);
-    if (origin_st == target_st) {
-        target_type = origin_type;
-        target_count = origin_count;
-    } else
-        OSHMPI_create_strided_dtype(nelems, target_st, mpi_type, 0 /* no required extent */ ,
-                                    &target_count, &target_type);
-
-    ctx_get_nbi_impl(ictx, origin_type, target_type, origin_addr, target_addr,
-                     origin_count, target_count, pe, completion, sobj_attr);
-
-    OSHMPI_free_strided_dtype(mpi_type, &origin_type);
-    if (origin_st != target_st)
-        OSHMPI_free_strided_dtype(mpi_type, &target_type);
+    for (int elem = 0; elem < nelems; elem++) {
+        ctx_get_nbi_impl(ictx, mpi_type, mpi_type, origin_addr + elem * typesize * origin_st,
+                         target_addr + elem * typesize * target_st, 1, 1, pe, completion, sobj_attr);
+    }
 }
 
 OSHMPI_STATIC_INLINE_PREFIX void ctx_ibget_nbi_impl(OSHMPI_ictx_t * ictx,
@@ -138,24 +105,13 @@ OSHMPI_STATIC_INLINE_PREFIX void ctx_ibget_nbi_impl(OSHMPI_ictx_t * ictx,
                                                    size_t nblocks, int pe,
                                                    int completion, OSHMPI_sobj_attr_t * sobj_attr)
 {
-    MPI_Datatype origin_type = MPI_DATATYPE_NULL, target_type = MPI_DATATYPE_NULL;
-    size_t origin_count = 0, target_count = 0;
+    int typesize = 0;
+    OSHMPI_CALLMPI(MPI_Type_size(mpi_type, &typesize));
 
-    OSHMPI_create_strided_dtype(nelems, origin_st, mpi_type, 0 /* no required extent */ ,
-                                &origin_count, &origin_type);
-    if (origin_st == target_st) {
-        target_type = origin_type;
-        target_count = origin_count;
-    } else
-        OSHMPI_create_strided_dtype(nelems, target_st, mpi_type, 0 /* no required extent */ ,
-                                    &target_count, &target_type);
-
-    ctx_get_nbi_impl(ictx, origin_type, target_type, origin_addr, target_addr,
-                     origin_count, target_count, pe, completion, sobj_attr);
-
-    OSHMPI_free_strided_dtype(mpi_type, &origin_type);
-    if (origin_st != target_st)
-        OSHMPI_free_strided_dtype(mpi_type, &target_type);
+    for (int block = 0; block < nblocks; block++) {
+        ctx_get_nbi_impl(ictx, mpi_type, mpi_type, origin_addr + block * typesize * origin_st,
+                         target_addr + block * typesize * target_st, nelems, nelems, pe, completion, sobj_attr);
+    }
 }
 
 
