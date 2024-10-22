@@ -16,6 +16,11 @@ int shmem_team_sync(shmem_team_t team)
     if (team == SHMEM_TEAM_WORLD) {
         OSHMPI_sync_all();
         return SHMEM_SUCCESS;
+    } else {
+        OSHMPI_team_t *team_obj;
+        OSHMPI_TEAM_GET_OBJ(team, team_obj);
+        OSHMPI_sync_team(team_obj);
+        return SHMEM_SUCCESS;
     }
     return SHMEM_OTHER_ERR;
 }

@@ -53,6 +53,15 @@ OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_sync_all(void)
 
 OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_sync_team(OSHMPI_team_t * team)
 {
+    /* Ensure completion of previously issued memory store */
+#ifdef OSHMPI_ENABLE_DYNAMIC_WIN
+    OSHMPI_CALLMPI(MPI_Win_sync(OSHMPI_global.symm_ictx.win));
+#else
+    OSHMPI_CALLMPI(MPI_Win_sync(OSHMPI_global.symm_heap_ictx.win));
+    OSHMPI_CALLMPI(MPI_Win_sync(OSHMPI_global.symm_data_ictx.win));
+#endif
+    if (OSHMPI_global.symm_heap_external_ictx.win) // FIXME w/ macro?
+        OSHMPI_CALLMPI(MPI_Win_sync(OSHMPI_global.symm_heap_external_ictx.win));
     OSHMPI_am_progress_mpi_barrier(team->comm);
 }
 
@@ -71,7 +80,8 @@ OSHMPI_STATIC_INLINE_PREFIX void OSHMPI_broadcast_team(OSHMPI_team_t * team, voi
         OSHMPI_ASSERT(lb == 0);
         OSHMPI_CALLMPI(MPI_Type_size(mpi_type, &typesize));
         OSHMPI_ASSERT(extent == typesize);
-        memcpy(dest, source, nelems * (size_t) extent);
+        //memcpy(dest, source, nelems * (size_t) extent);
+        OSHMPI_ctx_put(SHMEM_CTX_DEFAULT, mpi_type, typesize, source, dest, nelems, PE_root);
     }
 }
 
